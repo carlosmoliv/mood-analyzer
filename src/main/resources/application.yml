@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: mood-analyzer
+
+huggingface:
+  api-token: ${HF_API_TOKEN}
+  model: google/flan-t5-small
+  endpoint: https://api-inference.huggingface.co/models/${huggingface.model}
+  sentiment-model: bhadresh-savani/distilbert-base-uncased-emotion
+  sentiment-endpoint: https://api-inference.huggingface.co/models/${huggingface.sentiment-model}

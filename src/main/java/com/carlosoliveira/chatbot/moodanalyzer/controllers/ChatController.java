@@ -1,5 +1,6 @@
 package com.carlosoliveira.chatbot.moodanalyzer.controllers;
 
+import com.carlosoliveira.chatbot.moodanalyzer.dtos.FeedbackMessage;
 import com.carlosoliveira.chatbot.moodanalyzer.dtos.InputMessage;
 import com.carlosoliveira.chatbot.moodanalyzer.dtos.OutputMessage;
 import com.carlosoliveira.chatbot.moodanalyzer.services.AIService;
@@ -20,7 +21,12 @@ public class ChatController {
     @SendTo("/topic/messages")
     public OutputMessage handleMessage(InputMessage message) {
         String aiResponse = aiService.generateResponse(message.content());
-        String sentiment = aiService.analyzeSentimentFromAI(message.content());
+        String sentiment = aiService.analyzeSentiment(message.content());
         return new OutputMessage(message.sender(), aiResponse, sentiment);
+    }
+
+    @MessageMapping("/feedback")
+    public void handleFeedback(FeedbackMessage feedback) {
+        System.out.println("Feedback received: Message ID = " + feedback.messageId() + ", Correct = " + feedback.isCorrect());
     }
 }

@@ -9,17 +9,39 @@
 <h2>Chat with the MoodBot</h2>
 <input type="text" id="input" placeholder="Say something..." />
 <button onclick="sendMessage()">Send</button>
+
 <ul id="chat"></ul>
 
 <script>
     const socket = new SockJS('/chat-websocket');
     const stompClient = Stomp.over(socket);
 
+    const moodStyles = {
+        "Joy": { color: "green", emoji: "😊" },
+        "Sadness": { color: "blue", emoji: "😢" },
+        "Anger": { color: "red", emoji: "😠" },
+        "Neutral": { color: "gray", emoji: "😐" },
+        "Excited": { color: "orange", emoji: "🎉" }
+    };
+
     stompClient.connect({}, function () {
         stompClient.subscribe('/topic/messages', function (response) {
             const msg = JSON.parse(response.body);
             const li = document.createElement("li");
-            li.innerText = `[${msg.mood}] ${msg.sender}: ${msg.content}`;
+            const style = moodStyles[msg.mood] || moodStyles["Neutral"];
+            li.innerText = `${style.emoji} [${msg.mood}] ${msg.sender}: ${msg.content} `;
+
+            // Add feedback buttons
+            const correctBtn = document.createElement("button");
+            correctBtn.innerText = "Correct";
+            correctBtn.onclick = () => sendFeedback(msg.id, true);
+            const incorrectBtn = document.createElement("button");
+            incorrectBtn.innerText = "Incorrect";
+            incorrectBtn.onclick = () => sendFeedback(msg.id, false);
+
+            li.appendChild(correctBtn);
+            li.appendChild(incorrectBtn);
+            li.style.color = style.color;
             document.getElementById("chat").appendChild(li);
         });
     });
@@ -32,6 +54,11 @@
         };
         stompClient.send("/app/chat", {}, JSON.stringify(message));
         input.value = "";
+    }
+
+    function sendFeedback(messageId, isCorrect) {
+        // Send feedback to the server (e.g., via a new WebSocket endpoint)
+        stompClient.send("/app/feedback", {}, JSON.stringify({ messageId, isCorrect }));
     }
 </script>
 </body>
